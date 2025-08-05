@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Status - Power BI Testing Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .status-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .status-completed { color: #28a745; }
+        .status-error { color: #dc3545; }
+        .status-processing { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-4">
+                    <h2>📊 Analysis Status</h2>
+                    <p class="text-muted">{{ job.filename }}</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <div id="statusIcon" class="status-icon">
+                            {% if job.status == 'completed' %}
+                                <i class="fas fa-check-circle status-completed"></i>
+                            {% elif job.status == 'error' %}
+                                <i class="fas fa-exclamation-circle status-error"></i>
+                            {% else %}
+                                <i class="fas fa-spinner fa-spin status-processing"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <h4 id="statusText">
+                            {% if job.status == 'completed' %}✅ Analysis Complete
+                            {% elif job.status == 'error' %}❌ Analysis Failed
+                            {% elif job.status == 'analyzing' %}🔍 Analyzing File...
+                            {% else %}⏳ Processing...{% endif %}
+                        </h4>
+                        
+                        <div class="progress my-4" style="height: 25px;">
+                            <div id="progressBar" class="progress-bar 
+                                {% if job.status == 'completed' %}bg-success
+                                {% elif job.status == 'error' %}bg-danger
+                                {% else %}progress-bar-striped progress-bar-animated{% endif %}"
+                                style="width: {{ job.progress }}%">
+                                {{ job.progress }}%
+                            </div>
+                        </div>
+                        
+                        {% if job.status == 'completed' %}
+                            <a href="/results/{{ job.id }}" class="btn btn-success btn-lg">
+                                📈 View Results
+                            </a>
+                        {% elif job.status == 'error' %}
+                            <div class="alert alert-danger">
+                                <strong>Error:</strong> {{ job.error }}
+                            </div>
+                            <a href="/" class="btn btn-primary">
+                                🔄 Try Another File
+                            </a>
+                        {% else %}
+                            <p class="text-muted">Please wait while we analyze your file...</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="/" class="btn btn-outline-secondary">
+                        ← Back to Upload
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script>
+        {% if job.status not in ['completed', 'error'] %}
+        // Auto-refresh for running jobs
+        setInterval(function() {
+            fetch('/api/status/{{ job.id }}')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('progressBar').style.width = data.progress + '%';
+                    document.getElementById('progressBar').textContent = data.progress + '%';
+                    
+                    if (data.completed) {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }, 2000);
+        {% endif %}
+    </script>
+</body>
+</html> 

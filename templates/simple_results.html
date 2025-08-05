@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results - Power BI Testing Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+        .score-a { background: linear-gradient(45deg, #28a745, #20c997); }
+        .score-b { background: linear-gradient(45deg, #17a2b8, #007bff); }
+        .score-c { background: linear-gradient(45deg, #ffc107, #fd7e14); }
+        .score-d { background: linear-gradient(45deg, #dc3545, #e83e8c); }
+        
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .recommendation {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1>📊 Analysis Results</h1>
+            <h4 class="text-muted">{{ job.filename }}</h4>
+        </div>
+
+        {% if job.results.error %}
+            <div class="alert alert-danger">
+                <h5>❌ Analysis Error</h5>
+                <p>{{ job.results.error }}</p>
+            </div>
+        {% else %}
+            <!-- Performance Score -->
+            <div class="row mb-5">
+                <div class="col-md-12 text-center">
+                    <div class="score-circle score-{{ job.results.performance.performance_grade.lower() }}">
+                        {{ job.results.performance.performance_grade }}
+                    </div>
+                    <h3>Performance Grade</h3>
+                    <p class="text-muted">Based on file size and complexity analysis</p>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="row">
+                <!-- File Info -->
+                <div class="col-md-6">
+                    <div class="metric-card">
+                        <h5>📁 File Information</h5>
+                        <div class="row text-center mt-3">
+                            <div class="col-6">
+                                <h3 class="text-primary">{{ job.results.file_info.size_mb }}</h3>
+                                <small class="text-muted">MB</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-success">{{ job.results.performance.estimated_load_time }}</h3>
+                                <small class="text-muted">sec load time</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Structure -->
+                <div class="col-md-6">
+                    <div class="metric-card">
+                        <h5>🏗️ Report Structure</h5>
+                        <div class="row text-center mt-3">
+                            <div class="col-6">
+                                <h3 class="text-info">{{ job.results.structure.pages }}</h3>
+                                <small class="text-muted">Pages</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-warning">{{ job.results.structure.visuals }}</h3>
+                                <small class="text-muted">Visuals</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pages -->
+            {% if job.results.structure.page_names %}
+            <div class="metric-card">
+                <h5>📄 Pages Found</h5>
+                <div class="row">
+                    {% for page in job.results.structure.page_names %}
+                    <div class="col-md-4 mb-2">
+                        <span class="badge bg-light text-dark">{{ page }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Visual Types -->
+            {% if job.results.structure.visual_types %}
+            <div class="metric-card">
+                <h5>📈 Visual Types Used</h5>
+                <div class="row">
+                    {% for visual_type in job.results.structure.visual_types %}
+                    <div class="col-md-3 mb-2">
+                        <span class="badge bg-primary">{{ visual_type }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recommendations -->
+            <div class="metric-card">
+                <h5>💡 Recommendations</h5>
+                {% for recommendation in job.results.recommendations %}
+                <div class="recommendation">
+                    {{ recommendation }}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Performance Details -->
+            <div class="metric-card">
+                <h5>⚡ Performance Analysis</h5>
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <h4 class="text-primary">{{ job.results.performance.file_size_mb }} MB</h4>
+                        <small class="text-muted">File Size</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <h4 class="text-success">{{ job.results.performance.size_score }}/100</h4>
+                        <small class="text-muted">Size Score</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <h4 class="text-info">{{ job.results.performance.estimated_load_time }}s</h4>
+                        <small class="text-muted">Est. Load Time</small>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="text-center mt-5">
+            <a href="/" class="btn btn-primary btn-lg me-3">
+                📁 Analyze Another File
+            </a>
+            <button class="btn btn-outline-secondary" onclick="window.print()">
+                🖨️ Print Results
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</body>
+</html> 
