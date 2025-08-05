@@ -1,0 +1,25 @@
+tasks:
+  - name: Power BI Testing Tool
+    init: |
+      echo "🚀 Setting up Power BI Testing Tool..."
+      pip install -r requirements.txt
+      echo "✅ Dependencies installed!"
+      echo "🎯 Starting the tool..."
+    command: |
+      echo "🌐 Power BI Testing Tool is starting..."
+      echo "📁 Upload .pbix files to analyze them!"
+      python START_HERE.py
+
+ports:
+  - port: 5000
+    onOpen: open-browser
+    visibility: public
+    description: Power BI Testing Tool Web Interface
+
+github:
+  prebuilds:
+    master: true
+    branches: true
+
+image:
+  file: .gitpod.Dockerfile 
